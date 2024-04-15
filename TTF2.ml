@@ -55,3 +55,5 @@ let rec custom_insert l i e = if i = 0 then e::l else match l with
   [] -> [e] |
   x::xs -> x::custom_insert xs (i - 1) e;;
   
+
+  (* TODO *) (* Quadtrees *)
