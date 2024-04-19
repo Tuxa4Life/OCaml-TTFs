@@ -25,3 +25,24 @@ let spread l =
 let rec find_in_list key l = match l with 
   [] -> failwith "Element with input key was not found." |
   (k, v)::xs -> if k = key then v else find_in_list key xs;;
+
+let rec compose fl = 
+  let rec rev l = match l with 
+    [] -> [] |
+    x::xs -> (rev xs)@[x] in
+  match rev fl with
+  [] -> 0 |
+  x::xs -> x (compose xs);;
+
+let compute a l = 
+  let rec length l = match l with
+    [] -> 0 |
+    _::xs -> 1 + length xs in 
+  let rec power n p = match p with 
+    0 -> 1 |
+    _ -> n * power n (p - 1) in 
+  let a_coef = power a (power 2 (length l)) in
+  let rec comp a l i = match l with 
+    [] -> a |
+    x::xs -> (power x (power 2 i)) * comp a xs (i + 1) in 
+  comp a_coef l 0;;
