@@ -46,3 +46,18 @@ let compute a l =
     [] -> a |
     x::xs -> (power x (power 2 i)) * comp a xs (i + 1) in 
   comp a_coef l 0;;
+
+
+(* Crawling on trees *)
+type binary_tree = Leaf | Node of int * binary_tree * binary_tree;;
+
+let tree = Node (5, Node(2, Node (1, Node (0, Leaf, Leaf), Leaf), Node (3, Leaf, Leaf)), Node (8, Node (7, Node (6, Leaf, Leaf), Leaf), Node(9, Leaf, Leaf)));;
+
+let rec insert n = function
+  [] -> n |
+  _::xs -> insert n xs;;
+
+
+let inst = (0, 0, 0, 0);;
+let rec crawl tree inst = 5;;
+

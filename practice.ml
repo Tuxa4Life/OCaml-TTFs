@@ -1,88 +1,97 @@
-type 'a tree = Leaf | Node of 'a * 'a tree * 'a tree;;
-let root = Node (2, Node (1, Leaf, Leaf), Node (4, Leaf, Node (5, Leaf, Leaf)));;
-let dictoot = Node ((2, "Two"), Node ((1, "One"), Leaf, Leaf), Node ((4, "Four"), Leaf, Node ((5, "Five"), Leaf, Leaf)));;
-let dict = [(2, "Two"); (1, "One"); (4, "Four"); (5, "Five"); (0, "Zero")];;
+let dict = [(0, "Zero"); (1, "One"); (2, "Two"); (3, "Three"); (4, "Four"); (5, "Five"); (6, "Six"); (7, "Seven");]
 
-let rec size tree = match tree with 
-  Leaf -> 0 |
-  Node (_, l, r) -> 1 + size l + size r;;
+let print_dict_entry (k, v) = 
+  print_string "> Key: "; print_int k; print_string " | Value: \"" ; print_string v; print_string "\"" ;
+  print_newline ();;
 
-let rec total tree = match tree with 
-  Leaf -> 0 |
-  Node (x, l, r) -> x + total l + total r;;
+let rec forEach f l = match l with 
+  [] -> () |
+  x::xs -> f x; forEach f xs;;
 
-let rec depth tree = 
-  let max x y = if x > y then x else y in 
-  match tree with 
-    Leaf -> 0 |
-    Node (x, l, r) -> 1 + max (depth l) (depth r);;
+let print_dict = forEach print_dict_entry;;
 
-let rec treeToList tree = match tree with 
-  Leaf -> [] |
-  Node (x, l, r) -> treeToList l @ [x] @ treeToList r;;
+let rec read_dict () = 
+  try 
+    print_string "< Key : ";
+    let k = read_int () in match k with 
+      0 -> [] |
+      x -> print_string "| Value: "; let v = read_line() in (k, v)::read_dict()
+  with Failure string_of_int -> print_string "Key value must be an integer"; print_newline(); read_dict();;
 
-let rec mapTree f tree = match tree with 
-  Leaf -> Leaf |
-  Node (x, l , r) -> Node (f x, mapTree f l, mapTree f r);;
+let entry_to_channel ch (k, v) =
+  output_string ch "> Value: "; 
+  output_string ch (string_of_int k);
+  output_string ch " | Key: \"";
+  output_string ch v;
+  output_string ch "\"";
+  output_char ch '\n';;
 
-let rec insert n tree = match tree with 
-  Leaf -> Node (n, Leaf, Leaf) |
-  Node (x, l, r) -> if n < x then Node (x, insert n l, r) else Node (x, l, insert n r);;
+let dict_to_channel ch d = forEach (entry_to_channel ch) d;;
 
-let rec search k tree = match tree with 
-  Leaf -> failwith "Cannot find value with key" |
-  Node ((k', v), l, r) -> if k' = k then v else if k < k' then search k l else search k r;;
+let dict_to_file filename d = 
+  let ch = open_out filename in
+    dict_to_channel ch d;
+  close_out ch;;
 
-let rec is_in n tree = match tree with 
-  Leaf -> false |
-  Node (x, l, r) -> if x = n then true else if n < x then is_in n l else is_in n r;;
+let entry_of_channel ch = 
+  let name = input_line ch in name;;
 
-let rec flip tree = match tree with 
-  Leaf -> Leaf |
-  Node (x, l, r) -> Node (x, flip r, flip l);;
+let rec dictionary_of_channel ch = 
+  try 
+    let e = entry_of_channel ch in
+    e::dictionary_of_channel ch
+  with End_of_file -> [];;
 
-let rec equal t1 t2 = match t1, t2 with 
-  Leaf, Leaf -> true | 
-  Leaf, Node (x, y, z) -> false | Node (x, y, z), Leaf -> false |
-  Node (x1, l1, r1), Node (x2, l2, r2) -> (x1 = x2) && equal l1 l2 && equal r1 r2;;
-
-let rec generalEqual t1 t2 = mapTree (fun x -> 0) t1 = mapTree (fun x -> 0) t2;;
-
-let rec tree_of_list dict = match dict with 
-  [] -> Leaf |
-  (k, v)::xs -> insert (k, v) (tree_of_list xs);;
-
-let rec combine t1 t2 = match t1, t2 with 
-  Leaf, Leaf -> Leaf |
-  Leaf, t2 -> t2 | t1, Leaf -> t1 |
-  Node ((k, v), l1, r1), Node ((k', v'), l2, r2) -> if k = k' then Node ((k, v), combine l1 l2, combine r1 r2) else 
-    if k < k' then Node ((k, v), combine l1 t2, combine r1 t2) else Node ((k', v'), combine t1 l1, combine t1 r2);;
+let file_to_dict filename =
+  let ch = open_in filename in 
+  let dict = dictionary_of_channel ch in
+  close_in ch; dict;;
 
 
-type 'a flexitree = Leaf | Node of 'a * 'a flexitree list;;
+  (* Exercises *)
+let print_list lst =
+  let rec iter l = match l with 
+    [] -> () |
+    [x] -> print_string (string_of_int x); print_string "]" |
+    x::xs -> print_string (string_of_int x) ; print_string "; "; iter xs in
 
-let foot = Node (4, [Node (1, [Leaf]); Node (5, [Node (8, [Leaf]); Node (9, [Leaf])])]);;
+  print_string "["; 
+  iter lst; 
+  print_newline();;
 
-let fize free = 
-  let rec iterate l = match l with 
-    Node (_, lst)::xs -> 1 + iterate lst + iterate xs |
-    _ -> 0 in 
-  match free with 
-    Node (_, lst) -> 1 + iterate lst |
-    _ -> 0;;
+let rec create_tuple () = 
+  try
+    let first = read_int () in 
+    let second = read_int () in 
+    let third = read_int () in (first, second, third)
+  with Failure string_of_int -> print_string "Inputs must be integers" ; create_tuple();;
 
-let fotal free = 
-  let rec iterate l = match l with 
-    Node (x, lst)::xs -> x + iterate lst + iterate xs |
-    _ -> 0 in 
-  match free with 
-    Node (x, lst) -> x + iterate lst |
-    _ -> 0;;
+let table filename n = 
+  let rec line f n m = if (n + 1) = m then "" else 
+    string_of_int (f m) ^ "\t" ^ line f n (m + 1) in
+  let rec create n m acc = if (n + 1) = m then acc else 
+    create n (m + 1) (((line (fun x -> m * x) n 1) ^ "\n")::acc) in
+  let rec rev l = match l with 
+    [] -> [] |
+    x::xs -> (rev xs) @ [x] in
 
-let fap f free = 
-  let rec iterate f l = match l with 
-    Node (x, lst)::xs -> Node (f x, iterate f lst)::iterate f xs |
-    _ -> [] in 
-  match free with 
-    Node (x, lst) -> Node (f x, iterate f lst) |
-    _ -> Leaf;;
+  let ch = open_out filename in 
+    forEach (output_string ch) (rev (create n 1 [])) ;
+  close_out ch;;
+
+let file_lines filename = 
+  let rec counter ch = try let _ = input_line ch in 1 + counter ch with End_of_file -> 0 in 
+  let ch = open_in filename in let a = counter ch in close_in ch; a;;
+
+let copy org cp = 
+  let rec get_lines ch =
+    try let line = input_line ch in
+      line::get_lines ch 
+    with End_of_file -> [] in 
+    
+  let ch = open_in org in 
+  let data = get_lines ch in 
+  close_in ch;
+  let ch1 = open_out cp in 
+    forEach (output_string ch1) data;
+  close_out ch1;;
