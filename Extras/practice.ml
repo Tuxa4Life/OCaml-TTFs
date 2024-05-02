@@ -1,97 +1,105 @@
-let dict = [(0, "Zero"); (1, "One"); (2, "Two"); (3, "Three"); (4, "Four"); (5, "Five"); (6, "Six"); (7, "Seven");]
-
-let print_dict_entry (k, v) = 
-  print_string "> Key: "; print_int k; print_string " | Value: \"" ; print_string v; print_string "\"" ;
-  print_newline ();;
-
-let rec forEach f l = match l with 
-  [] -> () |
-  x::xs -> f x; forEach f xs;;
-
-let print_dict = forEach print_dict_entry;;
-
-let rec read_dict () = 
-  try 
-    print_string "< Key : ";
-    let k = read_int () in match k with 
-      0 -> [] |
-      x -> print_string "| Value: "; let v = read_line() in (k, v)::read_dict()
-  with Failure string_of_int -> print_string "Key value must be an integer"; print_newline(); read_dict();;
-
-let entry_to_channel ch (k, v) =
-  output_string ch "> Value: "; 
-  output_string ch (string_of_int k);
-  output_string ch " | Key: \"";
-  output_string ch v;
-  output_string ch "\"";
-  output_char ch '\n';;
-
-let dict_to_channel ch d = forEach (entry_to_channel ch) d;;
-
-let dict_to_file filename d = 
-  let ch = open_out filename in
-    dict_to_channel ch d;
-  close_out ch;;
-
-let entry_of_channel ch = 
-  let name = input_line ch in name;;
-
-let rec dictionary_of_channel ch = 
-  try 
-    let e = entry_of_channel ch in
-    e::dictionary_of_channel ch
-  with End_of_file -> [];;
-
-let file_to_dict filename =
-  let ch = open_in filename in 
-  let dict = dictionary_of_channel ch in
-  close_in ch; dict;;
-
-
-  (* Exercises *)
-let print_list lst =
-  let rec iter l = match l with 
-    [] -> () |
-    [x] -> print_string (string_of_int x); print_string "]" |
-    x::xs -> print_string (string_of_int x) ; print_string "; "; iter xs in
-
-  print_string "["; 
-  iter lst; 
+let print_stats lines chars words sents = 
+  print_string "Amount of lines: ";
+  print_int !lines;
+  print_newline();
+  print_string "Amount of characters: ";
+  print_int !chars;
+  print_newline();
+  print_string "Amount of words: ";
+  print_int !words;
+  print_newline();
+  print_string "Amount of sentences: ";
+  print_int !sents;
   print_newline();;
 
-let rec create_tuple () = 
-  try
-    let first = read_int () in 
-    let second = read_int () in 
-    let third = read_int () in (first, second, third)
-  with Failure string_of_int -> print_string "Inputs must be integers" ; create_tuple();;
+let print_histograms arr = 
+  print_string "--- List of Character frequencies ---";
+  print_newline();
 
-let table filename n = 
-  let rec line f n m = if (n + 1) = m then "" else 
-    string_of_int (f m) ^ "\t" ^ line f n (m + 1) in
-  let rec create n m acc = if (n + 1) = m then acc else 
-    create n (m + 1) (((line (fun x -> m * x) n 1) ^ "\n")::acc) in
-  let rec rev l = match l with 
-    [] -> [] |
-    x::xs -> (rev xs) @ [x] in
+  for x = 0 to 255 do 
+    if arr.(x) > 0 then begin
+      print_string "[";
+      print_char (char_of_int x); print_string "]: ";
+      print_int arr.(x); print_string " ";
+    end
+  done;;
 
-  let ch = open_out filename in 
-    forEach (output_string ch) (rev (create n 1 [])) ;
-  close_out ch;;
+let channel_statistics in_channel = 
+  let lines = ref 0 in 
+  let characters = ref 0 in 
+  let words = ref 0 in 
+  let sentences = ref 0 in
+  let histogram = Array.make 256 0 in
+  try 
+    while true do 
+      let line = input_line in_channel in 
+      lines := !lines + 1;
+      characters := !characters + String.length line;
+      String.iter (fun c -> 
+        match c with 
+          '.' | '?' | '!' -> sentences := !sentences + 1 |
+          ' ' -> words := !words + 1 |
+          _ -> ()
+      ) line;
+      String.iter (fun c -> histogram.((int_of_char c)) <- histogram.((int_of_char c)) + 1) line
+    done
+  with 
+    End_of_file -> 
+      print_stats lines characters words sentences;
+      print_newline();
+      print_histograms histogram;;
+      
+let file_statistics name = 
+  let ch = open_in name in 
+  try 
+    channel_statistics ch;
+    close_in ch;
+with _ -> close_in ch;;
 
-let file_lines filename = 
-  let rec counter ch = try let _ = input_line ch in 1 + counter ch with End_of_file -> 0 in 
-  let ch = open_in filename in let a = counter ch in close_in ch; a;;
 
-let copy org cp = 
-  let rec get_lines ch =
-    try let line = input_line ch in
-      line::get_lines ch 
-    with End_of_file -> [] in 
-    
-  let ch = open_in org in 
-  let data = get_lines ch in 
-  close_in ch;
-  let ch1 = open_out cp in 
-    forEach (output_string ch1) data;
-  close_out ch1;;
+(* Exercises *)
+let sum arr = 
+  let output = ref 0 in
+  for i = 0 to (Array.length arr) - 1 do 
+    output := !output + arr.(i)
+  done; 
+  !output;;
+
+let reverse arr = 
+  let length = (Array.length arr) - 1 in
+  for i = 0 to (length / 2) do 
+      let tmp = arr.(i) in
+      arr.(i) <- arr.(length - i);
+      arr.(length - i) <- tmp
+  done;
+  arr;;
+
+let array_table n = 
+  let output = Array.make n [||] in 
+  for x = 0 to n - 1 do 
+    output.(x) <- Array.make n 0
+  done;
+  for x = 0 to (n - 1) do 
+    for y = 0 to (n - 1) do
+      output.(y).(x) <- (x + 1) * (y + 1)
+    done 
+  done;
+  output;;
+
+let to_uppercase s = 
+  let output = ref "" in 
+  String.iter (fun c -> 
+    let num = int_of_char c in 
+    if num >= 97 && num <= 122 then 
+      output := !output ^ (String.make 1 (char_of_int (num - 32)))
+    else output := !output ^ String.make 1 c
+  ) s; output;;
+
+let to_lowercase s = 
+  let output = ref "" in 
+  String.iter (fun c -> 
+    let num = int_of_char c in 
+    if num >= 65 && num <= 90 then 
+      output := !output ^ (String.make 1 (char_of_int (num + 32)))
+    else output := !output ^ String.make 1 c
+  ) s; output;;

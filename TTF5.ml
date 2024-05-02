@@ -49,8 +49,7 @@ let rec delete x t = (* Used function: Line 40 *)
   match t with 
     Leaf -> Leaf |
     Node (y, l, r) -> if x = y then tmp else if x < y then Node(y, delete x l, r) else Node(y, l, delete x r);;
-          
-
+        
 
 
 (* Infinite Tree *)
