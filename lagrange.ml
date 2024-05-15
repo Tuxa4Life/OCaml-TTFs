@@ -1,4 +1,3 @@
-(* lagrange *)
 let small_l j x l =
   let rec aux j x k (h::t) n = if k = n + 1 then 1. else 
     if j = k then aux j x (k + 1) t n else let q = (x -. List.nth l k) /. (List.nth l j -. List.nth l k) in 
