@@ -1,4 +1,3 @@
-(* Minimal spanning tree *)
 type graph = (int * float * int) list
 
 let graph =  [(0, 1., 1); (0, 4. ,2); (1, 2., 2); (1, 1., 3); (2, 3., 3)]
