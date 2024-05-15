@@ -1,4 +1,3 @@
-(* Tail recursion and shit *)
 let rec fac n = 
   let rec aux m acc = match m with 
     1 -> acc |
@@ -20,8 +19,3 @@ let rec partition func lst =
     [] -> (acc1, acc2) |
     x::xs -> if f x then aux f xs (x::acc1) acc2 else aux f xs acc1 (x::acc2) in 
   aux func lst [] [];;
-
-
-(* Folds *)
-(* Do stuff  *)
-
