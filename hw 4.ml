@@ -1,6 +1,3 @@
-(* exercises from HW 4.txt *)
-
-
 let tuple_list = [(0, "Zero"); (1, "One"); (2, "Two"); (3, "Three"); (4, "Four"); (5, "Five")];;
 let int_list = [0; 1; 2; 3; 4; 5; 6; 7; 8; 9];;
 
