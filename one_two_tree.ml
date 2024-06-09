@@ -21,7 +21,7 @@ let exctract_min t =
       Two (t1, x, t2) -> aux t1 x in 
   aux t max_int;; 
 
-(* missing one useless function *)
+(* missing one useless function please forgive...*)
 
 let rec insert x t = match t with 
     Null -> Two (Null, x, Null) | 
@@ -45,7 +45,7 @@ let rec find x t = match t with
     One (y, t1) -> if y = x then true else find x t1 |
     Two (t1, y, t2) -> if y = x then true else find x t1 || find x t2;;
 
-let rec remove x t = (* this removes whole tree down from target element *)
+let rec remove x t = (* ik this removes whole tree down from target element without saving *)
   let rec aux x t = match t with 
       Null -> Null |
       One (x1, t1) -> if x1 = x then Null else One (x1, aux x t1) |
