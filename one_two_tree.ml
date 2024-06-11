@@ -1,25 +1,25 @@
 type 'a onetwo = Null | One of 'a * 'a onetwo | Two of 'a onetwo * 'a * 'a onetwo ;;
 
-let example_tree =
-  Two(
-    One(1, Null), 2, 
-    Two(
-      One(3, Null), 4, 
-      Two(
-        Null, 5, 
-        One(6, Null)
-      )
-    )
-  );;
+let example_tree = Two (One (1, Null), 2, Two (One (3, Null), 4, Two (Null, 5, One(6, Null))));;
 
 let list = [5; 2; 6; 7; 2; 1];;
 
 let exctract_min t = 
   let rec aux t n = match t with 
       Null -> n | 
-      One (x, t1) -> aux t1 x |
-      Two (t1, x, t2) -> aux t1 x in 
-  aux t max_int;; 
+      Two (t1, x, t2) -> aux t1 x | 
+      One (x, t1) -> match t1 with 
+        One (y, t2) -> if x > y then aux t1 x else x | 
+        _ -> aux t1 x in
+  let min = aux t max_int in 
+
+  let rec save_tree t = 
+    match t with 
+      Null -> Null |
+      One (x, t1) -> if x = min then Null else One (x, save_tree t1) |
+      Two (t1, x, t2) -> if x = min then Null else Two (save_tree t1, x, t2) in
+    
+  (Some min, save_tree t);; 
 
 (* missing one useless function please forgive...*)
 
