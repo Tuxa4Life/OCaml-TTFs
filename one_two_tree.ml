@@ -1,27 +1,46 @@
 type 'a onetwo = Null | One of 'a * 'a onetwo | Two of 'a onetwo * 'a * 'a onetwo ;;
 
 let example_tree = Two (One (1, Null), 2, Two (One (3, Null), 4, Two (Null, 5, One(6, Null))));;
+let binary = Two (Two (Null, 4, Null), 2, Two (Null, 3, Null));;
 
 let list = [5; 2; 6; 7; 2; 1];;
 
-let exctract_min t = 
-  let rec aux t n = match t with 
+let extract_min t = 
+  let rec find_min t n = match t with 
       Null -> n | 
-      Two (t1, x, t2) -> aux t1 x | 
+      Two (t1, x, t2) -> find_min t1 x | 
       One (x, t1) -> match t1 with 
-        One (y, t2) -> if x > y then aux t1 x else x | 
-        _ -> aux t1 x in
-  let min = aux t max_int in 
+        One (y, t2) -> if x > y then find_min t1 x else x | 
+        _ -> find_min t1 x in
+  let min = find_min t max_int in 
 
-  let rec save_tree t = 
-    match t with 
+  let rec save_tree t = match t with 
       Null -> Null |
-      One (x, t1) -> if x = min then Null else One (x, save_tree t1) |
-      Two (t1, x, t2) -> if x = min then Null else Two (save_tree t1, x, t2) in
+      Two (t1, x, t2) -> if x = min then Null else Two (save_tree t1, x, t2) |
+      One (x, t1) -> match t1 with 
+        One (y, t2) -> if x < y && x = min then t1 else One (x, save_tree t1) |
+        _ -> if x = min then Null else One (x, save_tree t1)
     
-  (Some min, save_tree t);; 
+    in (Some min, save_tree t);; 
 
-(* missing one useless function please forgive...*)
+
+
+
+let check_strictness t = 
+    let compare_left x t1 = match t1 with 
+    Null -> true |
+    One (y, _) | Two (_, y, _) -> x > y in
+
+    let compare_right x t1 = match t1 with 
+        Null -> true |
+        One (y, _) | Two (_, y, _) -> x < y in
+
+    let rec verify tr side = match tr with 
+        Null -> true | 
+        One (x, t) -> if side then (compare_right x t) && verify t side else (compare_left x t) && verify t side |
+        Two (t1, x, t2) -> (compare_left x t1) && (compare_right x t2) && (verify t1 false) && verify t2 true in
+    verify t false
+
 
 let rec insert x t = match t with 
     Null -> Two (Null, x, Null) | 
