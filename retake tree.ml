@@ -74,7 +74,7 @@ let rec remove_el x t = match t with
     Node ((v1, s1)::xs1) -> Node ((v1, (join s1 (Node xs1)))::xs)  (* igive extract_minis logikaa aqac *)
   else 
     let Node remove_on_level = remove_el x (Node xs) in
-    Node ((v, remove_el x s)::remove_on_level);;
+    Node ((v, remove_el x s)::remove_on_level);; 
 
 let remove x t = ((find x t), remove_el x t)
 (* End of 4 *)
